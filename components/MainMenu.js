@@ -1,84 +1,75 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { COLORS } from '../constants/colors';
 import { COMMON_STYLES } from '../constants/styles';
 
-const { width } = Dimensions.get('window');
-const BUTTON_SIZE = (width - 48 - 32) / 3; // (Screen width - horizontal padding - gap) / 3
-
 export default function MainMenu({ onSelectPracticeType }) {
+    const { width } = useWindowDimensions();
+    const isVertical = width < 600;
+
+    const renderButton = (type, label, iconPath, colors) => {
+        // Dynamic styles based on layout mode
+        const wrapperStyle = isVertical
+            ? styles.buttonWrapperVertical
+            : styles.buttonWrapperHorizontal;
+
+        const buttonInnerStyle = isVertical
+            ? styles.buttonInnerVertical
+            : styles.buttonInnerHorizontal;
+
+        const iconStyle = isVertical
+            ? styles.iconContainerVertical
+            : styles.iconContainerHorizontal;
+
+        const textStyle = isVertical
+            ? styles.buttonTextVertical
+            : styles.buttonTextHorizontal;
+
+        return (
+            <TouchableOpacity
+                key={type}
+                style={[styles.buttonWrapperBase, wrapperStyle]}
+                onPress={() => onSelectPracticeType(type)}
+            >
+                <LinearGradient
+                    colors={colors}
+                    style={[styles.buttonBase, buttonInnerStyle]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                >
+                    <View style={iconStyle}>
+                        <Svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <Path d={iconPath} />
+                        </Svg>
+                    </View>
+                    <Text style={textStyle}>{label}</Text>
+                </LinearGradient>
+            </TouchableOpacity>
+        );
+    };
+
     return (
         <LinearGradient
             {...COMMON_STYLES.gradientProps}
             style={styles.container}
         >
-            <View style={styles.content}>
-                <Text style={styles.title}>Choose Your Practice</Text>
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={[styles.content, { maxWidth: isVertical ? 600 : 800 }]}>
+                    <Text style={styles.title}>Choose Your Practice</Text>
 
-                <View style={styles.grid}>
-                    {/* Addition Button */}
-                    <TouchableOpacity
-                        style={styles.buttonWrapper}
-                        onPress={() => onSelectPracticeType('addition')}
-                    >
-                        <LinearGradient
-                            colors={COLORS.accent.addition}
-                            style={styles.button}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                        >
-                            <View style={styles.iconContainer}>
-                                <Svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                    <Path d="M12 5v14M5 12h14" />
-                                </Svg>
-                            </View>
-                            <Text style={styles.buttonText}>Addition</Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
-
-                    {/* Subtraction Button */}
-                    <TouchableOpacity
-                        style={styles.buttonWrapper}
-                        onPress={() => onSelectPracticeType('subtraction')}
-                    >
-                        <LinearGradient
-                            colors={COLORS.accent.subtraction}
-                            style={styles.button}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                        >
-                            <View style={styles.iconContainer}>
-                                <Svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                    <Path d="M5 12h14" />
-                                </Svg>
-                            </View>
-                            <Text style={styles.buttonText}>Subtraction</Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
-
-                    {/* Multiplication Button */}
-                    <TouchableOpacity
-                        style={styles.buttonWrapper}
-                        onPress={() => onSelectPracticeType('multiplication')}
-                    >
-                        <LinearGradient
-                            colors={COLORS.accent.multiplication}
-                            style={styles.button}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                        >
-                            <View style={styles.iconContainer}>
-                                <Svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                    <Path d="M18 6L6 18M6 6l12 12" />
-                                </Svg>
-                            </View>
-                            <Text style={styles.buttonText}>Multiplication</Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
+                    <View style={[styles.grid, isVertical && styles.gridVertical]}>
+                        {renderButton('addition', 'Addition', "M12 5v14M5 12h14", COLORS.accent.addition)}
+                        {renderButton('subtraction', 'Subtraction', "M5 12h14", COLORS.accent.subtraction)}
+                        {renderButton('multiplication', 'Multiplication', "M18 6L6 18M6 6l12 12", COLORS.accent.multiplication)}
+                    </View>
                 </View>
-            </View>
+            </ScrollView>
         </LinearGradient>
     );
 }
@@ -86,45 +77,88 @@ export default function MainMenu({ onSelectPracticeType }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    scrollView: {
+        flex: 1,
+        width: '100%',
+    },
+    scrollContent: {
+        flexGrow: 1,
         justifyContent: 'center',
-        alignItems: 'center',
+        paddingVertical: 40,
     },
     content: {
         width: '100%',
         paddingHorizontal: 24,
-        gap: 48,
+        gap: 32, // Reduced gap for better fit
+        alignSelf: 'center',
     },
     title: {
         fontSize: 16,
         color: COLORS.text.primary,
         textAlign: 'center',
-        fontFamily: 'Arial', // Fallback, system font is usually fine
         fontWeight: '400',
     },
     grid: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         gap: 16,
+        width: '100%',
     },
-    buttonWrapper: {
-        flex: 1,
-        aspectRatio: 1, // Make it square
+    gridVertical: {
+        flexDirection: 'column',
     },
-    button: {
-        flex: 1,
+
+    // Base Styles
+    buttonWrapperBase: {
+        // Common props if any
+    },
+    buttonBase: {
         borderRadius: 16,
-        padding: 12,
         justifyContent: 'center',
         alignItems: 'center',
         ...COMMON_STYLES.shadow,
     },
-    iconContainer: {
+
+    // Horizontal (Wide) Styles
+    buttonWrapperHorizontal: {
+        flex: 1,
+        aspectRatio: 1,
+        maxWidth: 200, // Prevent massive buttons on huge screens
+    },
+    buttonInnerHorizontal: {
+        flex: 1,
+        width: '100%',
+        padding: 12,
+    },
+    iconContainerHorizontal: {
         marginBottom: 8,
     },
-    buttonText: {
+    buttonTextHorizontal: {
         color: 'white',
         fontSize: 14,
         fontWeight: '500',
         textAlign: 'center',
+    },
+
+    // Vertical (Narrow) Styles
+    buttonWrapperVertical: {
+        width: '100%',
+        height: 80, // Fixed height bar
+    },
+    buttonInnerVertical: {
+        flex: 1,
+        flexDirection: 'row',
+        paddingHorizontal: 24,
+        justifyContent: 'flex-start', // Left align content
+    },
+    iconContainerVertical: {
+        marginRight: 16,
+    },
+    buttonTextVertical: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: '600',
+        textAlign: 'left',
     },
 });
