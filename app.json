@@ -13,14 +13,16 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.basetwolabs.mathrecall"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/brain-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.basetwolabs.mathrecall"
     },
     "web": {
       "favicon": "./assets/brain-icon.png"
