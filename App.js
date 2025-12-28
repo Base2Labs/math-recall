@@ -5,6 +5,8 @@ import SplashScreen from './components/SplashScreen';
 import MainMenu from './components/MainMenu';
 import PracticeOptions from './components/PracticeOptions';
 
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('splash'); // 'splash', 'menu', 'options'
   const [selectedPracticeType, setSelectedPracticeType] = useState(null);
@@ -41,29 +43,33 @@ export default function App() {
 
   if (currentScreen === 'splash') {
     return (
-      <View style={styles.container}>
-        <SplashScreen />
-        <StatusBar style="auto" />
-      </View>
+      <SafeAreaProvider>
+        <View style={styles.container}>
+          <SplashScreen />
+          <StatusBar style="auto" />
+        </View>
+      </SafeAreaProvider>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-        {currentScreen === 'menu' ? (
-          <MainMenu onSelectPracticeType={handlePracticeSelect} />
-        ) : (
-          /* Placeholder for PracticeOptions, effectively implemented in next step but wired here */
-          <PracticeOptions
-            practiceType={selectedPracticeType}
-            onBack={handleBackToMenu}
-            onStart={handleStartPractice}
-          />
-        )}
-      </Animated.View>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      <View style={styles.container}>
+        <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+          {currentScreen === 'menu' ? (
+            <MainMenu onSelectPracticeType={handlePracticeSelect} />
+          ) : (
+            /* Placeholder for PracticeOptions, effectively implemented in next step but wired here */
+            <PracticeOptions
+              practiceType={selectedPracticeType}
+              onBack={handleBackToMenu}
+              onStart={handleStartPractice}
+            />
+          )}
+        </Animated.View>
+        <StatusBar style="auto" />
+      </View>
+    </SafeAreaProvider>
   );
 }
 

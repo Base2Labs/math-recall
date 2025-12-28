@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { COLORS } from '../constants/colors';
@@ -82,69 +83,75 @@ export default function PracticeOptions({ practiceType, onBack, onStart }) {
             {...COMMON_STYLES.gradientProps}
             style={styles.container}
         >
-            <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-                showsVerticalScrollIndicator={false}
-            >
-                <View style={styles.content}>
+            <SafeAreaView style={styles.safeArea} edges={['top']}>
+                <View style={styles.headerContainer}>
                     <HeaderBackButton onPress={onBack} />
-
-                    <View style={styles.card}>
-                        <Text style={styles.title}>
-                            {practiceType.charAt(0).toUpperCase() + practiceType.slice(1)} Practice
-                        </Text>
-
-                        {/* Number Selection */}
-                        <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Select Number</Text>
-                            <View style={styles.numberGrid}>
-                                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                                    <SelectionButton
-                                        key={num}
-                                        label={num}
-                                        isSelected={selectedNumber === num}
-                                        onPress={() => setSelectedNumber(num)}
-                                        color={accentBorderColor}
-                                        style={styles.numberButton}
-                                        textStyle={styles.numberText}
-                                    />
-                                ))}
-                            </View>
-                        </View>
-
-                        {/* Question Count Selection */}
-                        <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Number of Questions</Text>
-                            <View style={styles.countRow}>
-                                {[10, 20, 30].map((count) => (
-                                    <SelectionButton
-                                        key={count}
-                                        label={`${count} Questions`}
-                                        isSelected={questionCount === count}
-                                        onPress={() => setQuestionCount(count)}
-                                        color={accentBorderColor}
-                                        style={styles.countButton}
-                                        textStyle={styles.countText}
-                                    />
-                                ))}
-                            </View>
-                        </View>
-
-                        <StartButton
-                            enabled={isStartEnabled}
-                            onPress={handleStart}
-                            color={primaryColor}
-                        />
-                    </View>
                 </View>
-            </ScrollView>
+                <ScrollView
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={styles.content}>
+                        <View style={styles.card}>
+                            <Text style={styles.title}>
+                                {practiceType.charAt(0).toUpperCase() + practiceType.slice(1)} Practice
+                            </Text>
+
+                            {/* Number Selection */}
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>Select Number</Text>
+                                <View style={styles.numberGrid}>
+                                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                                        <SelectionButton
+                                            key={num}
+                                            label={num}
+                                            isSelected={selectedNumber === num}
+                                            onPress={() => setSelectedNumber(num)}
+                                            color={accentBorderColor}
+                                            style={styles.numberButton}
+                                            textStyle={styles.numberText}
+                                        />
+                                    ))}
+                                </View>
+                            </View>
+
+                            {/* Question Count Selection */}
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>Number of Questions</Text>
+                                <View style={styles.countRow}>
+                                    {[10, 20, 30].map((count) => (
+                                        <SelectionButton
+                                            key={count}
+                                            label={`${count} Questions`}
+                                            isSelected={questionCount === count}
+                                            onPress={() => setQuestionCount(count)}
+                                            color={accentBorderColor}
+                                            style={styles.countButton}
+                                            textStyle={styles.countText}
+                                        />
+                                    ))}
+                                </View>
+                            </View>
+
+                            <StartButton
+                                enabled={isStartEnabled}
+                                onPress={handleStart}
+                                color={primaryColor}
+                            />
+                        </View>
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
         </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
+    },
+    safeArea: {
         flex: 1,
     },
     scrollView: {
@@ -154,8 +161,12 @@ const styles = StyleSheet.create({
     scrollContent: {
         flexGrow: 1,
         justifyContent: 'center',
-        alignItems: 'center',
-        paddingVertical: 32,
+        paddingVertical: 16, // Reduced top padding since header is separate
+    },
+    headerContainer: {
+        paddingHorizontal: 16,
+        paddingTop: 8,
+        paddingBottom: 8,
     },
     content: {
         width: '100%',
@@ -166,8 +177,8 @@ const styles = StyleSheet.create({
     backButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 16,
-        paddingLeft: 8,
+        padding: 8,
+        // Removed marginBottom as it's handled by container padding
     },
     backText: {
         fontSize: 16,
