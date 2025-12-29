@@ -5,6 +5,10 @@ import Svg, { Path } from 'react-native-svg';
 import { COLORS } from '../constants/colors';
 import { COMMON_STYLES } from '../constants/styles';
 
+/**
+ * @param {Object} props
+ * @param {(type: string) => void} props.onSelectPracticeType
+ */
 export default function MainMenu({ onSelectPracticeType }) {
     const { width } = useWindowDimensions();
     const isVertical = width < 600;

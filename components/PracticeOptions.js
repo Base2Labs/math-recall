@@ -6,32 +6,37 @@ import Svg, { Path } from 'react-native-svg';
 import { COLORS } from '../constants/colors';
 import { COMMON_STYLES } from '../constants/styles';
 
+import { TestScreenConfig } from '../models/TestScreenConfig';
+
+// ... existing imports
+
 const { width } = Dimensions.get('window');
+
+const HeaderBackButton = ({ onPress }) => (
+    <TouchableOpacity onPress={onPress} style={styles.backButton}>
+        <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={COLORS.text.secondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <Path d="M15 18l-6-6 6-6" />
+        </Svg>
+        <Text style={styles.backText}>Back</Text>
+    </TouchableOpacity>
+);
 
 const SelectionButton = ({ label, isSelected, onPress, color, style, textStyle }) => (
     <TouchableOpacity
         style={[
             styles.baseButton,
-            isSelected && styles.selectedButton,
-            isSelected && { borderColor: color },
-            style
+            style,
+            isSelected && [styles.selectedButton, { borderColor: color }]
         ]}
         onPress={onPress}
     >
         <Text style={[
             styles.baseText,
-            isSelected && styles.selectedText,
-            textStyle
-        ]}>{label}</Text>
-    </TouchableOpacity>
-);
-
-const HeaderBackButton = ({ onPress }) => (
-    <TouchableOpacity style={styles.backButton} onPress={onPress}>
-        <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={COLORS.text.secondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <Path d="M15 18l-6-6 6-6" />
-        </Svg>
-        <Text style={styles.backText}>Back</Text>
+            textStyle,
+            isSelected && [styles.selectedText, { color: color }]
+        ]}>
+            {label}
+        </Text>
     </TouchableOpacity>
 );
 
@@ -46,7 +51,7 @@ const StartButton = ({ enabled, onPress, color }) => (
                 colors={color}
                 style={styles.gradientButton}
                 start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+                end={{ x: 1, y: 0 }}
             >
                 <Text style={styles.startButtonText}>Start Practice</Text>
             </LinearGradient>
@@ -58,6 +63,12 @@ const StartButton = ({ enabled, onPress, color }) => (
     </TouchableOpacity>
 );
 
+/**
+ * @param {Object} props
+ * @param {string} props.practiceType
+ * @param {() => void} props.onBack
+ * @param {(config: import('../models/TestScreenConfig').TestScreenConfig) => void} props.onStart
+ */
 export default function PracticeOptions({ practiceType, onBack, onStart }) {
     const [selectedNumber, setSelectedNumber] = useState(null);
     const [questionCount, setQuestionCount] = useState(null);
@@ -70,11 +81,12 @@ export default function PracticeOptions({ practiceType, onBack, onStart }) {
 
     const handleStart = () => {
         if (isStartEnabled) {
-            onStart({
-                type: practiceType,
-                number: selectedNumber,
-                count: questionCount
-            });
+            try {
+                const config = new TestScreenConfig(practiceType, selectedNumber, questionCount);
+                onStart(config);
+            } catch (error) {
+                console.error("Failed to start practice:", error.message);
+            }
         }
     };
 

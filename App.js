@@ -4,12 +4,14 @@ import { StatusBar } from 'expo-status-bar';
 import SplashScreen from './components/SplashScreen';
 import MainMenu from './components/MainMenu';
 import PracticeOptions from './components/PracticeOptions';
+import TestScreen from './components/TestScreen';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('splash'); // 'splash', 'menu', 'options'
+  const [currentScreen, setCurrentScreen] = useState('splash'); // 'splash', 'menu', 'options', 'practice'
   const [selectedPracticeType, setSelectedPracticeType] = useState(null);
+  const [practiceConfig, setPracticeConfig] = useState(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -34,11 +36,13 @@ export default function App() {
   const handleBackToMenu = () => {
     setCurrentScreen('menu');
     setSelectedPracticeType(null);
+    setPracticeConfig(null);
   };
 
   const handleStartPractice = (config) => {
     console.log('Start Practice:', config);
-    // TODO: Navigate to practice screen
+    setPracticeConfig(config);
+    setCurrentScreen('practice');
   };
 
   if (currentScreen === 'splash') {
@@ -58,12 +62,17 @@ export default function App() {
         <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
           {currentScreen === 'menu' ? (
             <MainMenu onSelectPracticeType={handlePracticeSelect} />
-          ) : (
-            /* Placeholder for PracticeOptions, effectively implemented in next step but wired here */
+          ) : currentScreen === 'options' ? (
             <PracticeOptions
               practiceType={selectedPracticeType}
               onBack={handleBackToMenu}
               onStart={handleStartPractice}
+            />
+          ) : (
+            <TestScreen
+              config={practiceConfig}
+              onBack={() => setCurrentScreen('options')}
+              onFinish={handleBackToMenu}
             />
           )}
         </Animated.View>

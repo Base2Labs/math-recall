@@ -1,6 +1,10 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
+import { COLORS } from '../constants/colors';
 
+/**
+ * Initial splash screen component shown on app launch.
+ */
 export default function SplashScreen() {
   return (
     <View style={styles.container}>
@@ -23,7 +27,7 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.ui.white,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -44,12 +48,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#155DFC',
+    color: COLORS.brand.primary,
     textAlign: 'center',
   },
   tagline: {
     fontSize: 16,
-    color: '#4A5565',
+    color: COLORS.text.secondary,
     textAlign: 'center',
   },
 });

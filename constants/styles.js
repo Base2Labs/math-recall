@@ -3,7 +3,7 @@ import { COLORS } from './colors';
 
 export const COMMON_STYLES = StyleSheet.create({
     shadow: {
-        shadowColor: '#000',
+        shadowColor: COLORS.ui.black,
         shadowOffset: {
             width: 0,
             height: 10,
@@ -13,7 +13,7 @@ export const COMMON_STYLES = StyleSheet.create({
         elevation: 5,
     },
     shadowLarge: {
-        shadowColor: '#000',
+        shadowColor: COLORS.ui.black,
         shadowOffset: {
             width: 0,
             height: 20,
