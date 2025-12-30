@@ -3,8 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
-import { COLORS } from '../constants/colors';
-import { COMMON_STYLES } from '../constants/styles';
+import { COLORS, COMMON_STYLES, FONT_SIZES } from '../constants/theme';
 
 import { TestScreenConfig } from '../models/TestScreenConfig';
 
@@ -193,7 +192,7 @@ const styles = StyleSheet.create({
         // Removed marginBottom as it's handled by container padding
     },
     backText: {
-        fontSize: 16,
+        fontSize: FONT_SIZES.body,
         color: COLORS.text.secondary,
         marginLeft: 4,
     },
@@ -205,7 +204,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     title: {
-        fontSize: 20,
+        fontSize: FONT_SIZES.heading,
         fontWeight: '600',
         color: COLORS.text.primary,
         textAlign: 'center',
@@ -215,7 +214,7 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     sectionTitle: {
-        fontSize: 14,
+        fontSize: FONT_SIZES.caption,
         color: COLORS.text.secondary,
         marginBottom: 12,
         fontWeight: '500',
@@ -254,7 +253,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     numberText: {
-        fontSize: 18,
+        fontSize: FONT_SIZES.subheading,
     },
     countRow: {
         flexDirection: 'row',
@@ -266,7 +265,7 @@ const styles = StyleSheet.create({
         height: 44,
     },
     countText: {
-        fontSize: 14,
+        fontSize: FONT_SIZES.caption,
     },
     startButton: {
         marginTop: 24,
@@ -290,7 +289,7 @@ const styles = StyleSheet.create({
     },
     startButtonText: {
         color: COLORS.ui.white,
-        fontSize: 16,
+        fontSize: FONT_SIZES.body,
         fontWeight: '600',
     },
 });

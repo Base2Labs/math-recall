@@ -3,8 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingVi
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle } from 'react-native-svg';
-import { COLORS } from '../constants/colors';
-import { COMMON_STYLES } from '../constants/styles';
+import { COLORS, COMMON_STYLES, FONT_SIZES } from '../constants/theme';
 
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
@@ -132,8 +131,15 @@ export default function TestScreen({ config, onBack, onFinish }) {
                                     </Svg>
                                 </TouchableOpacity>
 
-                                <View style={styles.progressBarContainer}>
-                                    <View style={[styles.progressBarFill, { width: `${progress}%`, backgroundColor: themeColors[0] }]} />
+                                <View style={styles.progressColumn}>
+                                    <View style={styles.questionTextContainer}>
+                                        <Text style={styles.questionProgressText}>
+                                            Question {currentIndex + 1} of {count}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.progressBarContainer}>
+                                        <View style={[styles.progressBarFill, { width: `${progress}%`, backgroundColor: themeColors[0] }]} />
+                                    </View>
                                 </View>
 
                                 <View style={{ width: 24 }} />
@@ -217,17 +223,27 @@ const styles = StyleSheet.create({
     backButton: {
         padding: 8,
     },
-    progressBarContainer: {
+    progressColumn: {
         flex: 1,
-        height: 12,
-        backgroundColor: COLORS.ui.border, // Using border color as track
-        borderRadius: 6,
         marginHorizontal: 16,
+    },
+    questionTextContainer: {
+        marginBottom: 8,
+    },
+    questionProgressText: {
+        fontSize: FONT_SIZES.body,
+        color: COLORS.text.secondary,
+        lineHeight: 24, // Matches 1.5 multiplier usually, but explicit in design
+    },
+    progressBarContainer: {
+        height: 8, // Reduced from 12 as per screenshot/std
+        backgroundColor: COLORS.ui.border,
+        borderRadius: 4,
         overflow: 'hidden',
     },
     progressBarFill: {
         height: '100%',
-        borderRadius: 6,
+        borderRadius: 4,
     },
     questionContainer: {
         flex: 2,
@@ -235,7 +251,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     questionText: {
-        fontSize: 64,
+        fontSize: FONT_SIZES.hero,
         fontWeight: 'bold',
         color: COLORS.text.primary,
         fontVariant: ['tabular-nums'],
@@ -268,7 +284,7 @@ const styles = StyleSheet.create({
         height: '100%',
         backgroundColor: COLORS.ui.white,
         borderRadius: 20,
-        fontSize: 48,
+        fontSize: FONT_SIZES.display,
         textAlign: 'center',
         color: COLORS.text.primary,
         borderWidth: 2,
@@ -284,7 +300,7 @@ const styles = StyleSheet.create({
     },
     nextButtonText: {
         color: COLORS.text.white,
-        fontSize: 20,
+        fontSize: FONT_SIZES.heading,
         fontWeight: '600',
     }
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
-import { COLORS } from '../constants/colors';
+import { COLORS, FONT_SIZES } from '../constants/theme';
 
 /**
  * Initial splash screen component shown on app launch.
@@ -46,13 +46,13 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   title: {
-    fontSize: 24,
+    fontSize: FONT_SIZES.title,
     fontWeight: '600',
     color: COLORS.brand.primary,
     textAlign: 'center',
   },
   tagline: {
-    fontSize: 16,
+    fontSize: FONT_SIZES.body,
     color: COLORS.text.secondary,
     textAlign: 'center',
   },

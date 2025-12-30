@@ -2,8 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
-import { COLORS } from '../constants/colors';
-import { COMMON_STYLES } from '../constants/styles';
+import { COLORS, COMMON_STYLES, FONT_SIZES } from '../constants/theme';
 
 /**
  * @param {Object} props
@@ -98,7 +97,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
     title: {
-        fontSize: 16,
+        fontSize: FONT_SIZES.body,
         color: COLORS.text.primary,
         textAlign: 'center',
         fontWeight: '400',
@@ -140,7 +139,7 @@ const styles = StyleSheet.create({
     },
     buttonTextHorizontal: {
         color: 'white',
-        fontSize: 14,
+        fontSize: FONT_SIZES.caption,
         fontWeight: '500',
         textAlign: 'center',
     },
@@ -161,7 +160,7 @@ const styles = StyleSheet.create({
     },
     buttonTextVertical: {
         color: 'white',
-        fontSize: 18,
+        fontSize: FONT_SIZES.subheading,
         fontWeight: '600',
         textAlign: 'left',
     },
