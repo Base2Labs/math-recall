@@ -30,8 +30,8 @@ export default function TestScreen({ config, onBack, onFinish }) {
         const newQuestions = [];
         for (let i = 0; i < count; i++) {
             // Determine operands
-            // One operand is the selected 'number'. The other is random 0-12 (standard drill range).
-            const other = randomInt(0, 12);
+            // One operand is the selected 'number'. The other is random 0-9.
+            const other = randomInt(0, 9);
             const isFirst = Math.random() < 0.5;
 
             let q = {};
@@ -76,7 +76,7 @@ export default function TestScreen({ config, onBack, onFinish }) {
                     };
                 } else {
                     // Subtract selected number from something larger
-                    const total = number + randomInt(0, 12);
+                    const total = number + randomInt(0, 9);
                     q = {
                         val1: total,
                         val2: number,
