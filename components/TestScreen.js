@@ -4,36 +4,59 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { COLORS, COMMON_STYLES, FONT_SIZES } from '../constants/theme';
+import { calculateTotalTime, calculateAverageTime } from '../utils/resultCalculations';
 
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const NEXT_QUESTION_DELAY = 1500; // ms
 
 /**
  * @param {Object} props
  * @param {import('../models/TestScreenConfig').TestScreenConfig} props.config
  * @param {() => void} props.onBack
- * @param {() => void} props.onFinish
+ * @param {(results: Object) => void} props.onFinish
  */
 
 export default function TestScreen({ config, onBack, onFinish }) {
+    // ... [Same state init] ...
     // Config is assumed to be valid instance of TestConfig
     const { type, number, count } = config;
     const [questions, setQuestions] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [inputValue, setInputValue] = useState('');
-    const inputRef = useRef(null);
 
+    // State for feedback and interaction control
+    const [feedback, setFeedback] = useState(null); // null | 'correct' | 'incorrect'
+    const [waitingForNext, setWaitingForNext] = useState(false);
+
+    // Stats tracking
+    const [stats, setStats] = useState({
+        correct: 0,
+        totalQuestions: count,
+        questionTimes: []
+    });
+
+    const inputRef = useRef(null);
+    const startTimeRef = useRef(Date.now());
+
+    // ... [Same useEffects] ...
     useEffect(() => {
         generateQuestions();
     }, [config]);
 
+    // Reset timer when question changes
+    useEffect(() => {
+        if (!waitingForNext && questions.length > 0) {
+            startTimeRef.current = Date.now();
+            setInputValue('');
+        }
+    }, [currentIndex, waitingForNext, questions.length]);
+
+
     const generateQuestions = () => {
         const newQuestions = [];
         for (let i = 0; i < count; i++) {
-            // Determine operands
-            // One operand is the selected 'number'. The other is random 0-12 (standard drill range).
             const other = randomInt(0, 12);
             const isFirst = Math.random() < 0.5;
-
             let q = {};
 
             if (type === 'addition') {
@@ -51,56 +74,67 @@ export default function TestScreen({ config, onBack, onFinish }) {
                     answer: number * other
                 };
             } else if (type === 'subtraction') {
-                // For subtraction:
-                // Case 1: x - number = ? (e.g. 12 - 5) -> x must be >= number. x can go up to say number + 12.
-                // Case 2: number - x = ? (e.g. 5 - 2) -> x must be <= number.
-
-                // Let's bias towards "x - number" as that's more common in drills for learning "subtraction tables".
-                // But mixed is good.
-
-                // Let's strictly follow: "at least one of the numbers must match the number selected".
-                // So operands are (A, B). One of them is 'number'.
-
-                // If A is 'number': number - B. (B <= number)
-                // If B is 'number': A - number. (A >= number)
-
                 const subtractFromSelected = Math.random() < 0.3; // 30% chance to do 5 - x
-
                 if (subtractFromSelected) {
                     const sub = randomInt(0, number);
                     q = {
-                        val1: number,
-                        val2: sub,
-                        operator: '-',
-                        answer: number - sub
+                        val1: number, val2: sub, operator: '-', answer: number - sub
                     };
                 } else {
-                    // Subtract selected number from something larger
                     const total = number + randomInt(0, 12);
                     q = {
-                        val1: total,
-                        val2: number,
-                        operator: '-',
-                        answer: total - number
+                        val1: total, val2: number, operator: '-', answer: total - number
                     };
                 }
             }
-
             newQuestions.push(q);
         }
         setQuestions(newQuestions);
     };
 
     const handleAnswer = () => {
-        // Just move to next question regardless of input for now
-        // Clear input
-        setInputValue('');
+        if (waitingForNext || !inputValue) return;
 
-        if (currentIndex < questions.length - 1) {
-            setCurrentIndex(prev => prev + 1);
-        } else {
-            onFinish();
-        }
+        const currentQ = questions[currentIndex];
+        const userAnswer = parseInt(inputValue, 10);
+        const endTime = Date.now();
+        const timeTaken = endTime - startTimeRef.current;
+        const isCorrect = userAnswer === currentQ.answer;
+
+        Keyboard.dismiss();
+        setWaitingForNext(true);
+        setFeedback(isCorrect ? 'correct' : 'incorrect');
+
+        // Update stats
+        setStats(prev => ({
+            ...prev,
+            correct: isCorrect ? prev.correct + 1 : prev.correct,
+            questionTimes: [...prev.questionTimes, timeTaken]
+        }));
+
+        // Wait and advance
+        setTimeout(() => {
+            if (currentIndex < questions.length - 1) {
+                setFeedback(null);
+                setWaitingForNext(false);
+                setCurrentIndex(prev => prev + 1);
+            } else {
+                finishTest(isCorrect ? stats.correct + 1 : stats.correct, [...stats.questionTimes, timeTaken]);
+            }
+        }, NEXT_QUESTION_DELAY);
+    };
+
+    const finishTest = (finalCorrect, finalTimes) => {
+        const totalTime = calculateTotalTime(finalTimes);
+        const averageTime = calculateAverageTime(totalTime, stats.totalQuestions);
+
+        const results = {
+            correct: finalCorrect,
+            total: stats.totalQuestions,
+            totalTime: totalTime,
+            averageTime: averageTime
+        };
+        onFinish(results);
     };
 
     if (questions.length === 0) return null;
@@ -110,6 +144,40 @@ export default function TestScreen({ config, onBack, onFinish }) {
 
     // Determine colors
     const themeColors = COLORS.accent[type] || COLORS.accent.addition;
+
+    // Feedback Content
+    const renderFeedback = () => {
+        if (!feedback) return null;
+
+        const isCorrect = feedback === 'correct';
+        return (
+            <View style={styles.feedbackContainer}>
+                {isCorrect ? (
+                    <>
+                        <View style={styles.iconCircleSuccess}>
+                            <Svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={COLORS.ui.white} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <Path d="M20 6L9 17l-5-5" />
+                            </Svg>
+                        </View>
+                        <Text style={styles.feedbackTextSuccess}>Correct!</Text>
+                    </>
+                ) : (
+                    <>
+                        <View style={styles.iconCircleError}>
+                            <Svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={COLORS.ui.white} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <Path d="M18 6L6 18M6 6l12 12" />
+                            </Svg>
+                        </View>
+                        <Text style={styles.feedbackTextError}>Incorrect</Text>
+                        <Text style={styles.correctAnswerText}>
+                            Answer: {currentQ.answer}
+                        </Text>
+                    </>
+                )}
+            </View>
+        );
+    };
+
 
     return (
         <LinearGradient
@@ -125,7 +193,7 @@ export default function TestScreen({ config, onBack, onFinish }) {
                         <View style={styles.contentContainer}>
                             {/* Header / Progress */}
                             <View style={styles.header}>
-                                <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                                <TouchableOpacity onPress={onBack} style={styles.backButton} disabled={waitingForNext}>
                                     <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={COLORS.text.secondary} strokeWidth="2">
                                         <Path d="M15 18l-6-6 6-6" />
                                     </Svg>
@@ -145,53 +213,64 @@ export default function TestScreen({ config, onBack, onFinish }) {
                                 <View style={{ width: 24 }} />
                             </View>
 
-                            {/* Question Display */}
+                            {/* Question Display or Feedback */}
                             <View style={styles.questionContainer}>
-                                <Text style={styles.questionText}>
-                                    {currentQ.val1} {currentQ.operator} {currentQ.val2} = ?
-                                </Text>
+                                {feedback ? (
+                                    renderFeedback()
+                                ) : (
+                                    <Text style={styles.questionText}>
+                                        {currentQ.val1} {currentQ.operator} {currentQ.val2} = ?
+                                    </Text>
+                                )}
                             </View>
 
                             {/* Controls */}
-                            <View style={styles.controlsContainer}>
-                                {/* Microphone Icon */}
-                                <TouchableOpacity style={styles.micButton}>
-                                    <LinearGradient
-                                        colors={[COLORS.ui.white, COLORS.ui.offWhite]}
-                                        style={styles.micGradient}
+                            {!feedback && (
+                                <View style={styles.controlsContainer}>
+                                    {/* Microphone Icon */}
+                                    <TouchableOpacity style={styles.micButton}>
+                                        <LinearGradient
+                                            colors={[COLORS.ui.white, COLORS.ui.offWhite]}
+                                            style={styles.micGradient}
+                                        >
+                                            <Svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={COLORS.text.secondary} strokeWidth="2">
+                                                <Path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                                                <Path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                                                <Path d="M12 19v4" />
+                                                <Path d="M8 23h8" />
+                                            </Svg>
+                                        </LinearGradient>
+                                    </TouchableOpacity>
+
+                                    {/* Input Box */}
+                                    <View style={styles.inputContainer}>
+                                        <TextInput
+                                            ref={inputRef}
+                                            style={styles.input}
+                                            value={inputValue}
+                                            onChangeText={setInputValue}
+                                            keyboardType="number-pad"
+                                            placeholder="#"
+                                            placeholderTextColor={COLORS.text.secondary + '40'}
+                                            onSubmitEditing={handleAnswer}
+                                            returnKeyType="done"
+                                            autoFocus={false}
+                                            editable={!waitingForNext}
+                                        />
+                                    </View>
+
+                                    <TouchableOpacity
+                                        style={[styles.nextButton, { backgroundColor: themeColors[0] }]}
+                                        onPress={handleAnswer}
+                                        disabled={waitingForNext}
                                     >
-                                        <Svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={COLORS.text.secondary} strokeWidth="2">
-                                            <Path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                                            <Path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                                            <Path d="M12 19v4" />
-                                            <Path d="M8 23h8" />
-                                        </Svg>
-                                    </LinearGradient>
-                                </TouchableOpacity>
-
-                                {/* Input Box */}
-                                <View style={styles.inputContainer}>
-                                    <TextInput
-                                        ref={inputRef}
-                                        style={styles.input}
-                                        value={inputValue}
-                                        onChangeText={setInputValue}
-                                        keyboardType="number-pad"
-                                        placeholder="#"
-                                        placeholderTextColor={COLORS.text.secondary + '40'} // light opacity
-                                        onSubmitEditing={handleAnswer}
-                                        returnKeyType="done"
-                                        autoFocus={false} // Let user tap to launch keyboard as requested ("text box which will launch...")
-                                    />
+                                        <Text style={styles.nextButtonText}>Next</Text>
+                                    </TouchableOpacity>
                                 </View>
+                            )}
 
-                                <TouchableOpacity
-                                    style={[styles.nextButton, { backgroundColor: themeColors[0] }]}
-                                    onPress={handleAnswer}
-                                >
-                                    <Text style={styles.nextButtonText}>Next</Text>
-                                </TouchableOpacity>
-                            </View>
+                            {/* Spacer for feedback view to keep layout stable if controls are hidden or just take up space */}
+                            {feedback && <View style={styles.controlsPlaceholder} />}
                         </View>
                     </TouchableWithoutFeedback>
                 </KeyboardAvoidingView>
@@ -233,10 +312,10 @@ const styles = StyleSheet.create({
     questionProgressText: {
         fontSize: FONT_SIZES.body,
         color: COLORS.text.secondary,
-        lineHeight: 24, // Matches 1.5 multiplier usually, but explicit in design
+        lineHeight: 24,
     },
     progressBarContainer: {
-        height: 8, // Reduced from 12 as per screenshot/std
+        height: 8,
         backgroundColor: COLORS.ui.border,
         borderRadius: 4,
         overflow: 'hidden',
@@ -256,11 +335,54 @@ const styles = StyleSheet.create({
         color: COLORS.text.primary,
         fontVariant: ['tabular-nums'],
     },
+    feedbackContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    iconCircleSuccess: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#4CAF50', // Success Green
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+        ...COMMON_STYLES.shadow,
+    },
+    iconCircleError: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#F44336', // Error Red
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+        ...COMMON_STYLES.shadow,
+    },
+    feedbackTextSuccess: {
+        fontSize: FONT_SIZES.display,
+        fontWeight: 'bold',
+        color: '#4CAF50',
+    },
+    feedbackTextError: {
+        fontSize: FONT_SIZES.display,
+        fontWeight: 'bold',
+        color: '#F44336',
+    },
+    correctAnswerText: {
+        marginTop: 8,
+        fontSize: FONT_SIZES.heading,
+        color: COLORS.text.secondary,
+        fontWeight: '600',
+    },
     controlsContainer: {
         flex: 2,
         alignItems: 'center',
         justifyContent: 'flex-start',
         gap: 32,
+    },
+    controlsPlaceholder: {
+        flex: 2,
     },
     micButton: {
         width: 80,

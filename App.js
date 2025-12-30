@@ -5,13 +5,15 @@ import SplashScreen from './components/SplashScreen';
 import MainMenu from './components/MainMenu';
 import PracticeOptions from './components/PracticeOptions';
 import TestScreen from './components/TestScreen';
+import ResultsScreen from './components/ResultsScreen';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('splash'); // 'splash', 'menu', 'options', 'practice'
+  const [currentScreen, setCurrentScreen] = useState('splash'); // 'splash', 'menu', 'options', 'practice', 'results'
   const [selectedPracticeType, setSelectedPracticeType] = useState(null);
   const [practiceConfig, setPracticeConfig] = useState(null);
+  const [resultsData, setResultsData] = useState(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -37,12 +39,24 @@ export default function App() {
     setCurrentScreen('menu');
     setSelectedPracticeType(null);
     setPracticeConfig(null);
+    setResultsData(null);
   };
 
   const handleStartPractice = (config) => {
     console.log('Start Practice:', config);
     setPracticeConfig(config);
     setCurrentScreen('practice');
+  };
+
+  const handleTestFinish = (results) => {
+    setResultsData(results);
+    setCurrentScreen('results');
+  };
+
+  const handleRetry = () => {
+    // Restart with same config
+    setCurrentScreen('practice');
+    setResultsData(null);
   };
 
   if (currentScreen === 'splash') {
@@ -68,11 +82,17 @@ export default function App() {
               onBack={handleBackToMenu}
               onStart={handleStartPractice}
             />
-          ) : (
+          ) : currentScreen === 'practice' ? (
             <TestScreen
               config={practiceConfig}
               onBack={() => setCurrentScreen('options')}
-              onFinish={handleBackToMenu}
+              onFinish={handleTestFinish}
+            />
+          ) : (
+            <ResultsScreen
+              results={resultsData}
+              onHome={handleBackToMenu}
+              onRetry={handleRetry}
             />
           )}
         </Animated.View>

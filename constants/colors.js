@@ -23,5 +23,9 @@ export const COLORS = {
         offWhite: '#F0F0F0',
         black: '#000000',
         selected: '#F0F9FF',
+    },
+    status: {
+        success: '#4CAF50',
+        warning: '#FF9800',
     }
 };
