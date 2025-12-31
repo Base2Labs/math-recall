@@ -27,6 +27,5 @@ export const COLORS = {
     status: {
         success: '#05DF72',
         warning: '#FF9F43',
-        error: '#EF4444',
     }
 };

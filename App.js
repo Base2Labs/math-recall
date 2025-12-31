@@ -14,13 +14,13 @@ export default function App() {
   const [selectedPracticeType, setSelectedPracticeType] = useState(null);
   const [practiceConfig, setPracticeConfig] = useState(null);
   const [resultsData, setResultsData] = useState(null);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Wait 3 seconds, then start transition
     const timer = setTimeout(() => {
       setCurrentScreen('menu'); // Transition to menu instead of just showMenu=true
-      Animated.timing(fadeAnim, {
+      Animated.timing(fadeAnimation, {
         toValue: 1,
         duration: 500, // 500ms fade duration
         useNativeDriver: true,
@@ -71,7 +71,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <View style={styles.container}>
-        <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+        <Animated.View style={[styles.container, { opacity: fadeAnimation }]}>
           {currentScreen === 'menu' ? (
             <MainMenu onSelectPracticeType={handlePracticeSelect} />
           ) : currentScreen === 'options' ? (

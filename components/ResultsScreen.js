@@ -1,9 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, COMMON_STYLES, FONT_SIZES } from '../constants/theme';
 import { calculatePercentage, calculateAverageTime, formatTime } from '../utils/resultCalculations';
+import ScreenWrapper from './ScreenWrapper';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 /**
@@ -18,17 +17,17 @@ export default function ResultsScreen({ results, onHome, onRetry }) {
     const averageTime = calculateAverageTime(totalTime, total); // Calculate again or use passed if pre-calculated
 
     // Animations
-    const fadeAnim = useRef(new Animated.Value(0)).current;
-    const scaleAnim = useRef(new Animated.Value(0.8)).current;
+    const fadeAnimation = useRef(new Animated.Value(0)).current;
+    const scaleAnimation = useRef(new Animated.Value(0.8)).current;
 
     useEffect(() => {
         Animated.parallel([
-            Animated.timing(fadeAnim, {
+            Animated.timing(fadeAnimation, {
                 toValue: 1,
                 duration: 600,
                 useNativeDriver: true,
             }),
-            Animated.spring(scaleAnim, {
+            Animated.spring(scaleAnimation, {
                 toValue: 1,
                 friction: 6,
                 useNativeDriver: true,
@@ -41,53 +40,48 @@ export default function ResultsScreen({ results, onHome, onRetry }) {
     const iconColor = isGoodScore ? COLORS.status.success : COLORS.status.warning;
 
     return (
-        <LinearGradient
-            {...COMMON_STYLES.gradientProps}
-            style={styles.container}
-        >
-            <SafeAreaView style={styles.safeArea}>
-                <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
+        <ScreenWrapper>
+            <Animated.View style={[styles.content, { opacity: fadeAnimation, transform: [{ scale: scaleAnimation }] }]}>
 
-                    <Text style={styles.headerText}>{message}</Text>
+                <Text style={styles.headerText}>{message}</Text>
 
-                    {/* Score Circle */}
-                    <View style={styles.scoreContainer}>
-                        <View style={[styles.scoreCircle, { borderColor: iconColor }]}>
-                            <Text style={[styles.scorePercentage, { color: iconColor }]}>
-                                {percentage}%
-                            </Text>
-                            <Text style={styles.scoreText}>
-                                {correct} / {total} Correct
-                            </Text>
-                        </View>
+                {/* Score Circle */}
+                <View style={styles.scoreContainer}>
+                    <View style={[styles.scoreCircle, { borderColor: iconColor }]}>
+                        <Text style={[styles.scorePercentage, { color: iconColor }]}>
+                            {percentage}%
+                        </Text>
+                        <Text style={styles.scoreText}>
+                            {correct} / {total} Correct
+                        </Text>
                     </View>
+                </View>
 
-                    {/* Stats */}
-                    <View style={styles.statsContainer}>
-                        <View style={styles.statBox}>
-                            <Text style={styles.statLabel}>Total Time</Text>
-                            <Text style={styles.statValue}>{formatTime(totalTime)}</Text>
-                        </View>
-                        <View style={styles.statSeparator} />
-                        <View style={styles.statBox}>
-                            <Text style={styles.statLabel}>Avg Time</Text>
-                            <Text style={styles.statValue}>{formatTime(averageTime)}</Text>
-                        </View>
+                {/* Stats */}
+                <View style={styles.statsContainer}>
+                    <View style={styles.statBox}>
+                        <Text style={styles.statLabel}>Total Time</Text>
+                        <Text style={styles.statValue}>{formatTime(totalTime)}</Text>
                     </View>
-
-                    {/* Buttons */}
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity style={styles.primaryButton} onPress={onHome}>
-                            <Text style={styles.primaryButtonText}>Main Menu</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.secondaryButton} onPress={onRetry}>
-                            <Text style={styles.secondaryButtonText}>Try Again</Text>
-                        </TouchableOpacity>
+                    <View style={styles.statSeparator} />
+                    <View style={styles.statBox}>
+                        <Text style={styles.statLabel}>Avg Time</Text>
+                        <Text style={styles.statValue}>{formatTime(averageTime)}</Text>
                     </View>
+                </View>
 
-                </Animated.View>
-            </SafeAreaView>
-        </LinearGradient>
+                {/* Buttons */}
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={styles.primaryButton} onPress={onHome}>
+                        <Text style={styles.primaryButtonText}>Main Menu</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.secondaryButton} onPress={onRetry}>
+                        <Text style={styles.secondaryButtonText}>Try Again</Text>
+                    </TouchableOpacity>
+                </View>
+
+            </Animated.View>
+        </ScreenWrapper>
     );
 }
 
