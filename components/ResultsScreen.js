@@ -48,7 +48,12 @@ export default function ResultsScreen({ results, onHome, onRetry }) {
                 {/* Score Circle */}
                 <View style={styles.scoreContainer}>
                     <View style={[styles.scoreCircle, { borderColor: iconColor }]}>
-                        <Text style={[styles.scorePercentage, { color: iconColor }]}>
+                        <Text
+                            style={[styles.scorePercentage, { color: iconColor }]}
+                            numberOfLines={1}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.5}
+                        >
                             {percentage}%
                         </Text>
                         <Text style={styles.scoreText}>
@@ -107,20 +112,23 @@ const styles = StyleSheet.create({
     scoreContainer: {
         alignItems: 'center',
         marginBottom: 48,
-        ...COMMON_STYLES.shadow,
     },
     scoreCircle: {
-        width: 200,
-        height: 200,
-        borderRadius: 100,
+        width: 220,
+        height: 220,
+        borderRadius: 110,
         backgroundColor: COLORS.ui.white,
         borderWidth: 8,
         justifyContent: 'center',
         alignItems: 'center',
+        ...COMMON_STYLES.shadow,
     },
     scorePercentage: {
-        fontSize: 64, // Big!
+        fontSize: 56, // Adjusted to fit 100% comfortably
         fontWeight: 'bold',
+        paddingHorizontal: 20,
+        textAlign: 'center',
+        width: '100%',
     },
     scoreText: {
         fontSize: FONT_SIZES.body,
