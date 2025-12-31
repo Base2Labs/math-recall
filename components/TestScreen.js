@@ -21,10 +21,27 @@ export default function TestScreen({ config, onBack, onFinish }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [inputValue, setInputValue] = useState('');
     const inputRef = useRef(null);
+    const [userAnswers, setUserAnswers] = useState([]);
+    const [startTime, setStartTime] = useState(Date.now());
+
+    // State for feedback and interaction control
+    const [feedback, setFeedback] = useState(null); // null | 'correct' | 'incorrect'
+    const [waitingForNext, setWaitingForNext] = useState(false);
 
     useEffect(() => {
         generateQuestions();
+        setStartTime(Date.now());
     }, [config]);
+
+    // Auto-focus input when question changes
+    useEffect(() => {
+        if (!waitingForNext && questions.length > 0) {
+            const timer = setTimeout(() => {
+                inputRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [currentIndex, waitingForNext, questions.length]);
 
     const generateQuestions = () => {
         const newQuestions = [];
@@ -92,15 +109,45 @@ export default function TestScreen({ config, onBack, onFinish }) {
     };
 
     const handleAnswer = () => {
-        // Just move to next question regardless of input for now
-        // Clear input
+        if (!inputValue) return;
+
+        const currentQ = questions[currentIndex];
+        const userAnswer = parseInt(inputValue, 10);
+        const isCorrect = userAnswer === currentQ.answer;
+
+        // Calculate time for this specific question
+        const timeTaken = Date.now() - startTime;
+
+        const newAnswers = [...userAnswers, { ...currentQ, userAnswer, isCorrect, timeTaken }];
+        setUserAnswers(newAnswers);
+
+        // Show feedback
+        setFeedback(isCorrect ? 'correct' : 'incorrect');
+        setWaitingForNext(true);
+
+        // Clear input immediately so it's ready for next time, but keyboard stays up or handles naturally
         setInputValue('');
 
-        if (currentIndex < questions.length - 1) {
-            setCurrentIndex(prev => prev + 1);
-        } else {
-            onFinish();
-        }
+        setTimeout(() => {
+            if (currentIndex < questions.length - 1) {
+                setFeedback(null);
+                setWaitingForNext(false);
+                setCurrentIndex(prev => prev + 1);
+                // Reset start time for the NEW question
+                setStartTime(Date.now());
+            } else {
+                // Calculate total time by summing up individual question times
+                const totalTime = newAnswers.reduce((acc, curr) => acc + curr.timeTaken, 0);
+                const correctCount = newAnswers.filter(a => a.isCorrect).length;
+
+                onFinish({
+                    correct: correctCount,
+                    total: count,
+                    totalTime: totalTime,
+                    history: newAnswers
+                });
+            }
+        }, 1500); // 1.5s delay for feedback
     };
 
     if (questions.length === 0) return null;
@@ -121,38 +168,68 @@ export default function TestScreen({ config, onBack, onFinish }) {
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
                     style={styles.keyboardAvoid}
                 >
-                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                        <View style={styles.contentContainer}>
-                            {/* Header / Progress */}
-                            <View style={styles.header}>
-                                <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                                    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={COLORS.text.secondary} strokeWidth="2">
-                                        <Path d="M15 18l-6-6 6-6" />
-                                    </Svg>
-                                </TouchableOpacity>
+                    <View style={styles.contentContainer}>
+                        {/* Header / Progress */}
+                        <View style={styles.header}>
+                            <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                                <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={COLORS.text.secondary} strokeWidth="2">
+                                    <Path d="M15 18l-6-6 6-6" />
+                                </Svg>
+                            </TouchableOpacity>
 
-                                <View style={styles.progressColumn}>
-                                    <View style={styles.questionTextContainer}>
-                                        <Text style={styles.questionProgressText}>
-                                            Question {currentIndex + 1} of {count}
-                                        </Text>
-                                    </View>
-                                    <View style={styles.progressBarContainer}>
-                                        <View style={[styles.progressBarFill, { width: `${progress}%`, backgroundColor: themeColors[0] }]} />
-                                    </View>
+                            <View style={styles.progressColumn}>
+                                <View style={styles.questionTextContainer}>
+                                    <Text style={styles.questionProgressText}>
+                                        Question {currentIndex + 1} of {count}
+                                    </Text>
                                 </View>
-
-                                <View style={{ width: 24 }} />
+                                <View style={styles.progressBarContainer}>
+                                    <View style={[styles.progressBarFill, { width: `${progress}%`, backgroundColor: themeColors[0] }]} />
+                                </View>
                             </View>
 
-                            {/* Question Display */}
-                            <View style={styles.questionContainer}>
+                            <View style={{ width: 24 }} />
+                        </View>
+
+                        {/* Question Display */}
+                        <View style={styles.questionContainer}>
+                            {currentQ && !feedback && (
                                 <Text style={styles.questionText}>
                                     {currentQ.val1} {currentQ.operator} {currentQ.val2} = ?
                                 </Text>
-                            </View>
+                            )}
 
-                            {/* Controls */}
+                            {feedback && (
+                                <View style={styles.feedbackContainer}>
+                                    {feedback === 'correct' ? (
+                                        <>
+                                            <View style={styles.iconCircleSuccess}>
+                                                <Svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3">
+                                                    <Path d="M20 6L9 17l-5-5" />
+                                                </Svg>
+                                            </View>
+                                            <Text style={styles.feedbackTextSuccess}>Correct!</Text>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <View style={styles.iconCircleError}>
+                                                <Svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3">
+                                                    <Path d="M18 6L6 18" />
+                                                    <Path d="M6 6l12 12" />
+                                                </Svg>
+                                            </View>
+                                            <Text style={styles.feedbackTextError}>Incorrect</Text>
+                                            <Text style={styles.correctAnswerText}>
+                                                Answer: {currentQ.answer}
+                                            </Text>
+                                        </>
+                                    )}
+                                </View>
+                            )}
+                        </View>
+
+                        {/* Controls */}
+                        {!feedback && (
                             <View style={styles.controlsContainer}>
                                 {/* Microphone Icon */}
                                 <TouchableOpacity style={styles.micButton}>
@@ -185,15 +262,12 @@ export default function TestScreen({ config, onBack, onFinish }) {
                                     />
                                 </View>
 
-                                <TouchableOpacity
-                                    style={[styles.nextButton, { backgroundColor: themeColors[0] }]}
-                                    onPress={handleAnswer}
-                                >
-                                    <Text style={styles.nextButtonText}>Next</Text>
-                                </TouchableOpacity>
                             </View>
-                        </View>
-                    </TouchableWithoutFeedback>
+                        )}
+
+                        {/* Placeholder to adjust layout when controls are hidden */}
+                        {feedback && <View style={styles.controlsPlaceholder} />}
+                    </View>
                 </KeyboardAvoidingView>
             </SafeAreaView>
         </LinearGradient>
@@ -256,11 +330,54 @@ const styles = StyleSheet.create({
         color: COLORS.text.primary,
         fontVariant: ['tabular-nums'],
     },
+    feedbackContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    iconCircleSuccess: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: COLORS.status.success,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+        ...COMMON_STYLES.shadow,
+    },
+    iconCircleError: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: COLORS.status.warning, // Error Red/Orange
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+        ...COMMON_STYLES.shadow,
+    },
+    feedbackTextSuccess: {
+        fontSize: FONT_SIZES.display,
+        fontWeight: 'bold',
+        color: COLORS.status.success,
+    },
+    feedbackTextError: {
+        fontSize: FONT_SIZES.display,
+        fontWeight: 'bold',
+        color: COLORS.status.warning,
+    },
+    correctAnswerText: {
+        marginTop: 8,
+        fontSize: FONT_SIZES.heading,
+        color: COLORS.text.secondary,
+        fontWeight: '600',
+    },
     controlsContainer: {
         flex: 2,
         alignItems: 'center',
         justifyContent: 'flex-start',
         gap: 32,
+    },
+    controlsPlaceholder: {
+        flex: 2,
     },
     micButton: {
         width: 80,
@@ -291,16 +408,5 @@ const styles = StyleSheet.create({
         borderColor: COLORS.ui.border,
         ...COMMON_STYLES.shadow,
     },
-    nextButton: {
-        marginTop: 20,
-        paddingVertical: 16,
-        paddingHorizontal: 48,
-        borderRadius: 16,
-        ...COMMON_STYLES.shadow,
-    },
-    nextButtonText: {
-        color: COLORS.text.white,
-        fontSize: FONT_SIZES.heading,
-        fontWeight: '600',
-    }
+
 });
