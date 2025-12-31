@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { COLORS, COMMON_STYLES, FONT_SIZES } from '../constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import ScreenWrapper from './ScreenWrapper';
 
 import { TestScreenConfig } from '../models/TestScreenConfig';
 
@@ -90,71 +91,66 @@ export default function PracticeOptions({ practiceType, onBack, onStart }) {
     };
 
     return (
-        <LinearGradient
-            {...COMMON_STYLES.gradientProps}
-            style={styles.container}
-        >
-            <SafeAreaView style={styles.safeArea} edges={['top']}>
-                <View style={styles.headerContainer}>
-                    <HeaderBackButton onPress={onBack} />
-                </View>
-                <ScrollView
-                    style={styles.scrollView}
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
-                >
-                    <View style={styles.content}>
-                        <View style={styles.card}>
-                            <Text style={styles.title}>
-                                {practiceType.charAt(0).toUpperCase() + practiceType.slice(1)} Practice
-                            </Text>
+        <ScreenWrapper edges={['top']}>
+            <View style={styles.headerContainer}>
+                <HeaderBackButton onPress={onBack} />
+            </View>
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={styles.content}>
+                    <View style={styles.card}>
+                        <Text style={styles.title}>
+                            {practiceType.charAt(0).toUpperCase() + practiceType.slice(1)} Practice
+                        </Text>
 
-                            {/* Number Selection */}
-                            <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>Select Number</Text>
-                                <View style={styles.numberGrid}>
-                                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                                        <SelectionButton
-                                            key={num}
-                                            label={num}
-                                            isSelected={selectedNumber === num}
-                                            onPress={() => setSelectedNumber(num)}
-                                            color={accentBorderColor}
-                                            style={styles.numberButton}
-                                            textStyle={styles.numberText}
-                                        />
-                                    ))}
-                                </View>
+                        {/* Number Selection */}
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Select Number</Text>
+                            <View style={styles.numberGrid}>
+                                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (
+                                    <SelectionButton
+                                        key={number}
+                                        label={number}
+                                        isSelected={selectedNumber === number}
+                                        onPress={() => setSelectedNumber(number)}
+                                        color={accentBorderColor}
+                                        style={styles.numberButton}
+                                        textStyle={styles.numberText}
+                                    />
+                                ))}
                             </View>
-
-                            {/* Question Count Selection */}
-                            <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>Number of Questions</Text>
-                                <View style={styles.countRow}>
-                                    {[10, 20, 30].map((count) => (
-                                        <SelectionButton
-                                            key={count}
-                                            label={`${count} Questions`}
-                                            isSelected={questionCount === count}
-                                            onPress={() => setQuestionCount(count)}
-                                            color={accentBorderColor}
-                                            style={styles.countButton}
-                                            textStyle={styles.countText}
-                                        />
-                                    ))}
-                                </View>
-                            </View>
-
-                            <StartButton
-                                enabled={isStartEnabled}
-                                onPress={handleStart}
-                                color={primaryColor}
-                            />
                         </View>
+
+                        {/* Question Count Selection */}
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Number of Questions</Text>
+                            <View style={styles.countRow}>
+                                {[10, 20, 30].map((count) => (
+                                    <SelectionButton
+                                        key={count}
+                                        label={`${count} Questions`}
+                                        isSelected={questionCount === count}
+                                        onPress={() => setQuestionCount(count)}
+                                        color={accentBorderColor}
+                                        style={styles.countButton}
+                                        textStyle={styles.countText}
+                                    />
+                                ))}
+                            </View>
+                        </View>
+
+                        <StartButton
+                            enabled={isStartEnabled}
+                            onPress={handleStart}
+                            color={primaryColor}
+                        />
                     </View>
-                </ScrollView>
-            </SafeAreaView>
-        </LinearGradient>
+                </View>
+            </ScrollView>
+        </ScreenWrapper>
     );
 }
 

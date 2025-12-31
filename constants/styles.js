@@ -1,7 +1,14 @@
 import { StyleSheet } from 'react-native';
 import { COLORS } from './colors';
 
-export const COMMON_STYLES = StyleSheet.create({
+// Standard linear gradient props
+const GRADIENT_PROPS = {
+    colors: [COLORS.background.start, COLORS.background.end],
+    start: { x: 0.2, y: 0 },
+    end: { x: 0.8, y: 1 },
+};
+
+export const COMMON_STYLES = {
     shadow: {
         shadowColor: COLORS.ui.black,
         shadowOffset: {
@@ -27,10 +34,5 @@ export const COMMON_STYLES = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    // Standard linear gradient props (not a style object, but useful config)
-    gradientProps: {
-        colors: [COLORS.background.start, COLORS.background.end],
-        start: { x: 0.2, y: 0 },
-        end: { x: 0.8, y: 1 },
-    }
-});
+    gradientProps: GRADIENT_PROPS,
+};

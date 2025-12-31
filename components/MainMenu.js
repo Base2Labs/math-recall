@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
+import ScreenWrapper from './ScreenWrapper';
 import { COLORS, COMMON_STYLES, FONT_SIZES } from '../constants/theme';
 
 /**
@@ -54,10 +55,7 @@ export default function MainMenu({ onSelectPracticeType }) {
     };
 
     return (
-        <LinearGradient
-            {...COMMON_STYLES.gradientProps}
-            style={styles.container}
-        >
+        <ScreenWrapper>
             <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
@@ -73,7 +71,7 @@ export default function MainMenu({ onSelectPracticeType }) {
                     </View>
                 </View>
             </ScrollView>
-        </LinearGradient>
+        </ScreenWrapper>
     );
 }
 

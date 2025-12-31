@@ -5,20 +5,22 @@ import SplashScreen from './components/SplashScreen';
 import MainMenu from './components/MainMenu';
 import PracticeOptions from './components/PracticeOptions';
 import TestScreen from './components/TestScreen';
+import ResultsScreen from './components/ResultsScreen';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('splash'); // 'splash', 'menu', 'options', 'practice'
+  const [currentScreen, setCurrentScreen] = useState('splash'); // 'splash', 'menu', 'options', 'practice', 'results'
   const [selectedPracticeType, setSelectedPracticeType] = useState(null);
   const [practiceConfig, setPracticeConfig] = useState(null);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [resultsData, setResultsData] = useState(null);
+  const fadeAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Wait 3 seconds, then start transition
     const timer = setTimeout(() => {
       setCurrentScreen('menu'); // Transition to menu instead of just showMenu=true
-      Animated.timing(fadeAnim, {
+      Animated.timing(fadeAnimation, {
         toValue: 1,
         duration: 500, // 500ms fade duration
         useNativeDriver: true,
@@ -37,6 +39,16 @@ export default function App() {
     setCurrentScreen('menu');
     setSelectedPracticeType(null);
     setPracticeConfig(null);
+    setResultsData(null);
+  };
+
+  const handleFinishTest = (results) => {
+    setResultsData(results);
+    setCurrentScreen('results');
+  };
+
+  const handleRetry = () => {
+    setCurrentScreen('practice');
   };
 
   const handleStartPractice = (config) => {
@@ -59,7 +71,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <View style={styles.container}>
-        <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+        <Animated.View style={[styles.container, { opacity: fadeAnimation }]}>
           {currentScreen === 'menu' ? (
             <MainMenu onSelectPracticeType={handlePracticeSelect} />
           ) : currentScreen === 'options' ? (
@@ -68,11 +80,17 @@ export default function App() {
               onBack={handleBackToMenu}
               onStart={handleStartPractice}
             />
+          ) : currentScreen === 'results' ? (
+            <ResultsScreen
+              results={resultsData}
+              onHome={handleBackToMenu}
+              onRetry={handleRetry}
+            />
           ) : (
             <TestScreen
               config={practiceConfig}
               onBack={() => setCurrentScreen('options')}
-              onFinish={handleBackToMenu}
+              onFinish={handleFinishTest}
             />
           )}
         </Animated.View>
